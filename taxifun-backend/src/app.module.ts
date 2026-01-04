@@ -6,6 +6,8 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';  // <--- Ajoute cette ligne
 import { User } from './auth/entities/user.entity';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { RideModule } from './ride/ride.module';
+import { Ride } from './ride/entities/ride.entity';
 
 @Module({
   imports: [
@@ -20,12 +22,13 @@ import { DashboardModule } from './dashboard/dashboard.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [User],
+      entities: [User, Ride],
       synchronize: true,
       logging: true,
     }),
     AuthModule,
-    DashboardModule,  
+    DashboardModule,
+    RideModule,  
   ],
   controllers: [AppController],
   providers: [AppService],
