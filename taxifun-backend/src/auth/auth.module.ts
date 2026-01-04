@@ -10,7 +10,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
 
 @Module({
-  imports: [
+  imports: [ConfigModule,
     TypeOrmModule.forFeature([User]),
     PassportModule,
     JwtModule.registerAsync({
@@ -18,7 +18,8 @@ import { JwtStrategy } from './jwt.strategy';
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN') || '7d',
+          // Le "as any" indique à TS de ne pas valider le type complexe StringValue ici
+          expiresIn: (configService.get<string>('JWT_EXPIRES_IN') || '7d') as any,
         },
       }),
       inject: [ConfigService],
