@@ -7,16 +7,16 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // ←←← AJOUTE ÇA ICI POUR RÉGLER LE CORS
+  // Configuration CORS
+  // En production, tu pourras remplacer '*' par l'URL de ton frontend Render
   app.enableCors({
-    origin: 'http://localhost:8080', // Autorise uniquement ton frontend Vite
-    credentials: true,               // Important si tu utilises des cookies plus tard
+    origin: '*', 
+    credentials: true,
   });
-  // Ou pour développer rapidement : app.enableCors(); // autorise tout (*)
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  // Configuration Swagger (tu l'as déjà)
+  // Configuration Swagger
   const config = new DocumentBuilder()
     .setTitle('TaxiFun API')
     .setDescription('API backend pour l\'application de taxi TaxiFun')
@@ -44,8 +44,13 @@ async function bootstrap() {
     },
   });
 
-  await app.listen(3000);
-  console.log(`Application is running on: http://localhost:3000`);
-  console.log(`Swagger documentation: http://localhost:3000/api`);
+  // --- MODIFICATION CRUCIALE POUR RENDER ---
+  // On utilise process.env.PORT car Render assigne un port aléatoire
+  // On ajoute '0.0.0.0' pour accepter les connexions externes
+  const port = process.env.PORT || 3000;
+  await app.listen(port, '0.0.0.0');
+  
+  console.log(`Application is running on port: ${port}`);
+  console.log(`Swagger documentation: /api`);
 }
 bootstrap();
