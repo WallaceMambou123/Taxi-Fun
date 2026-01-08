@@ -48,7 +48,7 @@ async function bootstrap() {
   // On utilise process.env.PORT car Render assigne un port aléatoire
   // On ajoute '0.0.0.0' pour accepter les connexions externes
   const port = process.env.PORT || 3000;
-  await app.listen(port, '0.0.0.0');
+  await app.listen(process.env.PORT || 3000, '0.0.0.0');
   
   console.log(`Application is running on port: ${port}`);
   console.log(`Swagger documentation: /api`);
