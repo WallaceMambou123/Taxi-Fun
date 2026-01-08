@@ -7,18 +7,23 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Active la validation globale (pour les DTO)
+  // ←←← AJOUTE ÇA ICI POUR RÉGLER LE CORS
+  app.enableCors({
+    origin: 'http://localhost:8080', // Autorise uniquement ton frontend Vite
+    credentials: true,               // Important si tu utilises des cookies plus tard
+  });
+  // Ou pour développer rapidement : app.enableCors(); // autorise tout (*)
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  // Configuration Swagger
+  // Configuration Swagger (tu l'as déjà)
   const config = new DocumentBuilder()
     .setTitle('TaxiFun API')
     .setDescription('API backend pour l\'application de taxi TaxiFun')
     .setVersion('1.0')
-    .addTag('auth', 'Authentification et inscription')
-    .addTag('dashboard', 'Tableau de bord personnalisé')
-    .addTag('rides', 'Gestion des courses (commander, accepter, etc.)')
-    .addTag('wallet', 'Gestion du portefeuille (recharge, retrait)') // futur
+    .addTag('auth')
+    .addTag('dashboard')
+    .addTag('rides')
     .addBearerAuth(
       {
         type: 'http',
@@ -28,14 +33,14 @@ async function bootstrap() {
         description: 'Entrer ton token JWT',
         in: 'header',
       },
-      'JWT-auth', // ce nom sera utilisé dans @ApiBearerAuth
+      'JWT-auth',
     )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document, {
     swaggerOptions: {
-      persistAuthorization: true, // garde le token même après refresh
+      persistAuthorization: true,
     },
   });
 

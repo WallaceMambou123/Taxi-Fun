@@ -27,7 +27,7 @@ import { Ride } from './ride/entities/ride.entity';
       logging: true,
     }),
     AuthModule,
-    DashboardModule,
+   // DashboardModule,
     RideModule,  
   ],
   controllers: [AppController],
