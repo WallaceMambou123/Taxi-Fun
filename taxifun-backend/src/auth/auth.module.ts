@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
@@ -20,7 +20,7 @@ import { JwtStrategy } from './jwt.strategy';
         signOptions: {
           expiresIn: configService.get<string>('JWT_EXPIRES_IN') || '1h',
         },
-      }),
+      }) as JwtModuleOptions,
       inject: [ConfigService],
     }),
   ],
