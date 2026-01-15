@@ -34,11 +34,22 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  dio: ^5.4.0              # Plus puissant que 'http' pour les intercepteurs (JWT)
+  flutter_secure_storage: ^9.0.0 # Pour stocker le token JWT de NestJS
+  json_annotation: ^4.8.1  # Pour parser le JSON du backend
+  shared_preferences: ^2.2.2
+  flutter_svg: ^2.0.10+1
+  google_maps_flutter: ^2.5.3
+  geolocator: ^12.0.0
+  #flutter_google_places_sdk: ^0.3.0 # Ajoute celle-ci
+  #google_api_headers: ^2.0.0
+  uuid: ^4.5.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
+  build_runner: ^2.4.8     # Génération automatique des modèles
+  json_serializable: ^6.7.1
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
@@ -56,7 +67,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-
+  assets:
+    - assets/images/          # Inclut toutes les images du dossier
+    - assets/icons/
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

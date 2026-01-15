@@ -1,122 +1,174 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:taxifun/ui/screens/home_page.dart';
+
+// Importe tes autres fichiers ici (assure-toi que les chemins sont corrects)
+ import 'ui/screens/login_screen.dart';
+ import 'ui/screens/register_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const TaxiFunApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class TaxiFunApp extends StatelessWidget {
+  const TaxiFunApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
+      title: 'Taxi-Fun',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        // Utilisation de ta couleur spécifique comme thème de base
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFEC8C01)),
+        fontFamily: 'Poppins',
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      // Définition des routes pour la navigation
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const OnboardingScreen(),
+        '/LoginScreen': (context) => const LoginScreen(),
+        '/RegisterScreen': (context) => const SignUpScreen(),
+        '/HomeScreen' : (context) => const HomeScreen()
+      },
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+// --- ÉCRAN D'ACCUEIL (ONBOARDING) ---
+class OnboardingScreen extends StatelessWidget {
+  const OnboardingScreen({super.key});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+  final Color orangeColor = const Color(0xFFEC8C01);
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          SafeArea(
+            bottom: false,
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.5,
+              width: double.infinity, // Utilise toute la largeur disponible
+              child: Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(80),
+                          bottomRight: Radius.circular(80),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          )
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(180),
+                          bottomRight: Radius.circular(180),
+                        ),
+                        child: Image.asset(
+                          'assets/images/accueilP1.png',
+                          fit: BoxFit.contain, // "Cover" pour bien remplir l'arrondi
+                        ),
+                      ),
+                    ),
+                  ),
+                  _buildFloatingIcon(Icons.location_on, top: 40, left: 30),
+                  _buildFloatingIcon(Icons.directions_car, top: 60, right: 30),
+                  _buildFloatingIcon(Icons.map, bottom: 40, left: 10),
+                  _buildFloatingIcon(Icons.phone, bottom: 20, right: 20),
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+              child: Column(
+                children: [
+                  RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+                      children: [
+                        const TextSpan(text: 'BIENVENUE '),
+                        TextSpan(text: 'SUR TAXI-FUN', style: TextStyle(color: orangeColor)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    "Plus qu'un simple taxi, Taxi-Fun est votre partenaire de route. Installez-vous confortablement, on s'occupe du reste.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 15, color: Colors.black54, height: 1.4),
+                  ),
+                  const SizedBox(height: 50), // Utilise Spacer pour pousser les boutons vers le bas
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/RegisterScreen');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: orangeColor,
+                      minimumSize: const Size(double.infinity, 56),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      elevation: 0,
+                    ),
+                    child: const Text('Commencer l\'aventure',
+                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(height: 15),
+                  RichText(
+                    text: TextSpan(
+                      style: const TextStyle(color: Colors.black54, fontSize: 16),
+                      children: [
+                        const TextSpan(text: 'Avez-vous déjà un compte ? '),
+                        TextSpan(
+                          text: 'Connectez-vous',
+                          style: TextStyle(
+                            color: orangeColor,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Navigator.pushNamed(context, '/LoginScreen');
+                            },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+
+  Widget _buildFloatingIcon(IconData icon, {double? top, double? bottom, double? left, double? right}) {
+    return Positioned(
+      top: top, bottom: bottom, left: left, right: right,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 2)]
+        ),
+        child: Icon(icon, size: 28, color: orangeColor),
+      ),
     );
   }
 }
