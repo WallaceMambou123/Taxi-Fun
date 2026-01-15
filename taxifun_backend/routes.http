@@ -1,0 +1,185 @@
+### Variables
+@baseUrl = http://localhost:3000
+@token = your_jwt_token_here
+@sessionId = your_session_id_here
+
+### ============================================
+### AUTHENTIFICATION
+### ============================================
+
+### Register new user
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "driver@example.com",
+  "password": "SecurePassword123!",
+  "role": "driver"
+}
+
+### Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "driver@example.com",
+  "password": "SecurePassword123!"
+}
+
+### ============================================
+### ROUTES - CONSTRUCTION D'ITINÉRAIRE
+### ============================================
+
+### 1. Initialiser un itinéraire (Paris -> Strasbourg)
+POST {{baseUrl}}/routes/init
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "origin": {
+    "lat": 48.8566,
+    "lng": 2.3522,
+    "address": "Paris, France"
+  },
+  "destination": {
+    "lat": 48.5734,
+    "lng": 7.7521,
+    "address": "Strasbourg, France"
+  },
+  "travelMode": "DRIVE",
+  "provideAlternatives": true,
+  "language": "fr"
+}
+
+### 2. Ajouter un waypoint (Nancy)
+POST {{baseUrl}}/routes/add-waypoint
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "sessionId": "{{sessionId}}",
+  "newWaypoint": {
+    "lat": 48.6921,
+    "lng": 6.1844,
+    "address": "Nancy, France"
+  }
+}
+
+### 3. Ajouter un autre waypoint (Metz)
+POST {{baseUrl}}/routes/add-waypoint
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "sessionId": "{{sessionId}}",
+  "newWaypoint": {
+    "lat": 49.1193,
+    "lng": 6.1757,
+    "address": "Metz, France"
+  }
+}
+
+### 4. Récupérer l'état actuel de l'itinéraire
+GET {{baseUrl}}/routes/{{sessionId}}
+Authorization: Bearer {{token}}
+
+### 5. Finaliser l'itinéraire
+POST {{baseUrl}}/routes/finalize/{{sessionId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "routeName": "Tournée Paris-Strasbourg",
+  "notes": "Itinéraire optimisé pour livraisons"
+}
+
+### 6. Récupérer toutes mes sessions actives
+GET {{baseUrl}}/routes/user/active
+Authorization: Bearer {{token}}
+
+### 7. Supprimer un itinéraire
+DELETE {{baseUrl}}/routes/{{sessionId}}
+Authorization: Bearer {{token}}
+
+### ============================================
+### EXEMPLES ADDITIONNELS
+### ============================================
+
+### Exemple: Itinéraire court (Paris -> Versailles)
+POST {{baseUrl}}/routes/init
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "origin": {
+    "lat": 48.8566,
+    "lng": 2.3522,
+    "address": "Paris, France"
+  },
+  "destination": {
+    "lat": 48.8049,
+    "lng": 2.1204,
+    "address": "Versailles, France"
+  },
+  "travelMode": "DRIVE",
+  "computeAlternativeRoutes": true,
+  "language": "fr"
+}
+
+### Exemple: Itinéraire vélo
+POST {{baseUrl}}/routes/init
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "origin": {
+    "lat": 48.8566,
+    "lng": 2.3522
+  },
+  "destination": {
+    "lat": 48.8606,
+    "lng": 2.3376
+  },
+  "travelMode": "BICYCLE",
+  "language": "fr"
+}
+
+### Exemple: Itinéraire avec plusieurs waypoints d'un coup (Lille -> Lyon)
+POST {{baseUrl}}/routes/init
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "origin": {
+    "lat": 50.6292,
+    "lng": 3.0573,
+    "address": "Lille, France"
+  },
+  "destination": {
+    "lat": 45.7640,
+    "lng": 4.8357,
+    "address": "Lyon, France"
+  },
+  "travelMode": "DRIVE",
+  "provideAlternatives": false,
+  "language": "fr"
+}
+
+### Test: Requête invalide (coordonnées hors limites)
+POST {{baseUrl}}/routes/init
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "origin": {
+    "lat": 200,
+    "lng": 2.3522
+  },
+  "destination": {
+    "lat": 48.5734,
+    "lng": 7.7521
+  }
+}
+
+### Test: Requête sans token (devrait retourner 401)
+GET {{baseUrl}}/routes/user/active

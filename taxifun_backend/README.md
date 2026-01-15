@@ -1,98 +1,339 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🚕 Taxi-Fun Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST pour plateforme de gestion de taxis avec construction manuelle d'itinéraires.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 📋 Description
 
-## Description
+Backend NestJS pour l'application Taxi-Fun, permettant aux chauffeurs de:
+- 🔐 S'authentifier via JWT
+- 🗺️ Construire manuellement des itinéraires avec Google Maps
+- 📍 Ajouter progressivement des waypoints
+- 🔄 Recalculer automatiquement les routes à chaque modification
+- 💾 Sauvegarder et gérer leurs sessions d'itinéraires
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🚀 Démarrage Rapide
 
-## Project setup
+### Prérequis
+
+- Node.js 18+ et npm
+- PostgreSQL 15+
+- Clé API Google Maps (Directions API activée)
+
+### Installation (5 minutes)
 
 ```bash
-$ npm install
+# 1. Installer les dépendances
+npm install
+
+# 2. Créer la base de données PostgreSQL
+psql -U postgres
+CREATE DATABASE taxifun_db;
+\q
+
+# 3. Configurer les variables d'environnement
+# Éditer .env et ajouter:
+# - GOOGLE_MAPS_API_KEY (obligatoire)
+# - DB_PASSWORD (si différent de "postgres")
+
+# 4. Démarrer l'application
+npm run start:dev
 ```
 
-## Compile and run the project
+L'API sera disponible sur http://localhost:3000
+
+### Test Rapide
 
 ```bash
-# development
-$ npm run start
+# Windows PowerShell
+.\test-routes.ps1
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+# Linux/macOS
+./test-routes.sh
 ```
 
-## Run tests
+## 📚 Documentation Complète
+
+| Document | Description |
+|----------|-------------|
+| [🚀 QUICKSTART.md](QUICKSTART.md) | Guide de démarrage en 5 minutes |
+| [📘 README_ROUTES.md](README_ROUTES.md) | Documentation complète du module Routes |
+| [🏗️ ARCHITECTURE.md](ARCHITECTURE.md) | Architecture technique détaillée |
+| [✅ IMPLEMENTATION_COMPLETE.md](IMPLEMENTATION_COMPLETE.md) | Checklist d'implémentation |
+| [📦 PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) | Résumé du projet |
+
+## 🎯 Fonctionnalités
+
+### Module d'Authentification
+- ✅ Inscription utilisateur
+- ✅ Connexion JWT
+- ✅ Protection des routes
+
+### Module Routes (🆕)
+- ✅ Initialisation d'itinéraire (origin + destination)
+- ✅ Ajout progressif de waypoints
+- ✅ Recalcul automatique avec Google Maps
+- ✅ Routes alternatives (jusqu'à 3)
+- ✅ Suggestions intelligentes de waypoints
+- ✅ Gestion de sessions temporaires
+- ✅ 4 modes de transport (voiture, vélo, marche, deux-roues)
+
+## 🛠️ Stack Technique
+
+- **Framework**: NestJS 11
+- **Language**: TypeScript 5.7
+- **Database**: PostgreSQL (TypeORM)
+- **Auth**: JWT (Passport)
+- **Validation**: class-validator
+- **External API**: Google Maps Directions API
+
+## 📁 Structure du Projet
+
+```
+src/
+├── auth/              # Module d'authentification
+│   ├── dto/
+│   ├── entities/
+│   ├── auth.service.ts
+│   ├── auth.controller.ts
+│   └── jwt.strategy.ts
+│
+├── routes/            # Module de construction d'itinéraires
+│   ├── dto/          # DTOs avec validation
+│   ├── entities/     # Entités TypeORM
+│   ├── interfaces/   # Interfaces TypeScript
+│   ├── services/     # Services spécialisés
+│   ├── routes.controller.ts
+│   ├── routes.service.ts
+│   └── routes.module.ts
+│
+└── app.module.ts     # Module racine
+```
+
+## 🔌 API Endpoints
+
+### Authentification
+
+| Endpoint | Méthode | Description |
+|----------|---------|-------------|
+| `/auth/register` | POST | Créer un compte |
+| `/auth/login` | POST | Se connecter |
+
+### Routes (Protégées JWT)
+
+| Endpoint | Méthode | Description |
+|----------|---------|-------------|
+| `/routes/init` | POST | Initialiser un itinéraire |
+| `/routes/add-waypoint` | POST | Ajouter un waypoint |
+| `/routes/:sessionId` | GET | Récupérer l'état |
+| `/routes/finalize/:sessionId` | POST | Finaliser l'itinéraire |
+| `/routes/user/active` | GET | Lister sessions actives |
+| `/routes/:sessionId` | DELETE | Supprimer une session |
+
+## 🔧 Configuration
+
+### Variables d'Environnement (.env)
+
+```env
+# Database (PostgreSQL)
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_DATABASE=taxifun_db
+
+# JWT
+JWT_SECRET=your_super_secret_jwt_key
+JWT_EXPIRES_IN=24h
+
+# Google Maps API
+GOOGLE_MAPS_API_KEY=your_api_key_here
+
+# Sessions
+ROUTE_SESSION_TTL=3600
+```
+
+## 🧪 Tests
+
+### Tests Automatisés
 
 ```bash
-# unit tests
-$ npm run test
+# Windows
+.\test-routes.ps1
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+# Linux/macOS
+./test-routes.sh
 ```
 
-## Deployment
+### Tests Manuels
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Ouvrir `routes.http` dans VS Code avec l'extension REST Client.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Tests Unitaires (à venir)
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm test
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## 📖 Exemples d'Utilisation
 
-## Resources
+### 1. Créer un Itinéraire
 
-Check out a few resources that may come in handy when working with NestJS:
+```bash
+POST /routes/init
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+{
+  "origin": {
+    "lat": 48.8566,
+    "lng": 2.3522,
+    "address": "Paris"
+  },
+  "destination": {
+    "lat": 45.7640,
+    "lng": 4.8357,
+    "address": "Lyon"
+  },
+  "travelMode": "DRIVE",
+  "provideAlternatives": true
+}
+```
 
-## Support
+### 2. Ajouter un Waypoint
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+POST /routes/add-waypoint
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
 
-## Stay in touch
+{
+  "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+  "newWaypoint": {
+    "lat": 47.3220,
+    "lng": 5.0415,
+    "address": "Dijon"
+  }
+}
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## 🔒 Sécurité
 
-## License
+- ✅ Tous les endpoints routes protégés par JWT
+- ✅ Validation stricte des entrées (class-validator)
+- ✅ Protection SQL injection (TypeORM)
+- ✅ Isolation des données par utilisateur
+- ✅ Secrets en variables d'environnement
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 📊 Base de Données
+
+### Tables Créées Automatiquement
+
+- `users` - Utilisateurs authentifiés
+- `route_sessions` - Sessions d'itinéraires temporaires
+
+Le schéma est créé automatiquement avec `synchronize: true` (développement uniquement).
+
+## 🚦 Scripts NPM
+
+```bash
+# Développement
+npm run start:dev      # Démarrer en mode watch
+
+# Production
+npm run build          # Compiler TypeScript
+npm run start:prod     # Démarrer en production
+
+# Tests
+npm test               # Tests unitaires
+npm run test:e2e       # Tests end-to-end
+npm run test:cov       # Coverage
+
+# Qualité du Code
+npm run lint           # Linter ESLint
+npm run format         # Formatter Prettier
+```
+
+## 🐛 Debugging
+
+### Vérifier PostgreSQL
+
+```bash
+psql -U postgres -l
+psql -U postgres -d taxifun_db -c "\dt"
+```
+
+### Logs de l'Application
+
+Les logs s'affichent dans le terminal où vous avez lancé `npm run start:dev`.
+
+### Problèmes Courants
+
+Voir [QUICKSTART.md](QUICKSTART.md) section "Problèmes Courants".
+
+## 📦 Déploiement
+
+### Checklist Production
+
+- [ ] Désactiver `synchronize: true` dans TypeORM
+- [ ] Configurer migrations TypeORM
+- [ ] Utiliser gestionnaire de secrets (AWS Secrets Manager, etc.)
+- [ ] Configurer HTTPS
+- [ ] Configurer CORS
+- [ ] Ajouter rate limiting
+- [ ] Configurer logs centralisés
+- [ ] Configurer monitoring
+- [ ] Backups automatiques DB
+
+## 🔄 Roadmap
+
+### Version 1.0 (Actuelle)
+- ✅ Authentification JWT
+- ✅ Construction manuelle d'itinéraires
+- ✅ Gestion de sessions
+
+### Version 1.1 (Prochaine)
+- 🔄 Tests unitaires complets
+- 🔄 Tests E2E
+- 🔄 Documentation Swagger
+- 🔄 Migration Routes API v2
+
+### Version 2.0 (Future)
+- 📱 WebSockets (temps réel)
+- 🗄️ Redis (cache performances)
+- 📊 Analytics et statistiques
+- 🌐 Multi-langue
+- 📱 Support mobile optimisé
+
+## 🤝 Contribution
+
+Ce projet est en cours de développement. Pour contribuer:
+
+1. Fork le projet
+2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
+3. Commit les changements (`git commit -m 'Add AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
+
+## 📝 License
+
+[MIT License](LICENSE)
+
+## 📧 Contact & Support
+
+Pour toute question:
+1. Consulter la [documentation complète](README_ROUTES.md)
+2. Vérifier les [problèmes courants](QUICKSTART.md)
+3. Ouvrir une issue GitHub
+
+## 🙏 Remerciements
+
+- [NestJS](https://nestjs.com/) - Framework backend
+- [Google Maps Platform](https://developers.google.com/maps) - API de routage
+- [TypeORM](https://typeorm.io/) - ORM pour PostgreSQL
+- [PostgreSQL](https://www.postgresql.org/) - Base de données
+
+---
+
+**Built with ❤️ using NestJS, TypeScript, and Google Maps API**
+
+*Status: ✅ Fully Implemented - Ready for Development*

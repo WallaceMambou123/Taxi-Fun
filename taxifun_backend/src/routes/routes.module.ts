@@ -1,0 +1,24 @@
+// src/routes/routes.module.ts
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
+import { RoutesController } from './routes.controller';
+import { RoutesService } from './routes.service';
+import { GoogleMapsService } from './services/google-maps.service';
+import { RouteSessionService } from './services/route-session.service';
+import { RouteSession } from './entities/route-session.entity';
+
+/**
+ * Module pour la gestion des itinéraires
+ * Fournit les fonctionnalités de construction manuelle d'itinéraires avec Google Maps
+ */
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([RouteSession]),
+    ScheduleModule.forRoot(), // Pour les tâches cron de nettoyage
+  ],
+  controllers: [RoutesController],
+  providers: [RoutesService, GoogleMapsService, RouteSessionService],
+  exports: [RoutesService],
+})
+export class RoutesModule {}
