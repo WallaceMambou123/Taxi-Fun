@@ -7,8 +7,21 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Taxifun API')
-    .setDescription("Le swagger contenant l'api de TaxiFun")
+    .setDescription("API REST pour la plateforme Taxi-Fun - Gestion des courses et itinéraires")
     .setVersion('1.0')
+    .addTag('Authentication', 'Endpoints d\'authentification (Client & Driver)')
+    .addTag('Routes', 'Construction manuelle d\'itinéraires (Driver only)')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Entrez le token JWT reçu lors de la connexion',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
     .build();
 
     const document = SwaggerModule.createDocument(app, config);

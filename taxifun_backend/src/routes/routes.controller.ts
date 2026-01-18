@@ -21,6 +21,7 @@ import {
   ApiBadRequestResponse,
   ApiUnauthorizedResponse,
   ApiNotFoundResponse,
+  ApiForbiddenResponse,
   ApiBody,
   ApiParam,
   ApiResponse,
@@ -31,11 +32,12 @@ import { RoutesService } from './routes.service';
 import { RouteInitDto } from './dto/route-init.dto';
 import { AddWaypointDto } from './dto/add-waypoint.dto';
 import { FinalizeRouteDto } from './dto/finalize-route.dto';
+import { DriverGuard } from '../auth/guards/driver.guard';
 
-@ApiTags('Routes - Construction manuelle d\'itinéraires')
-@ApiBearerAuth() // Tous les endpoints nécessitent un token JWT
+@ApiTags('Routes - Construction manuelle d\'itinéraires (Chauffeurs uniquement)')
+@ApiBearerAuth('JWT-auth')
 @Controller('routes')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), DriverGuard) // JWT + Vérification rôle chauffeur
 export class RoutesController {
   private readonly logger = new Logger(RoutesController.name);
 
@@ -87,6 +89,7 @@ export class RoutesController {
   })
   @ApiBadRequestResponse({ description: 'Origin ou destination invalide / mal formé' })
   @ApiUnauthorizedResponse({ description: 'Token JWT manquant ou invalide' })
+  @ApiForbiddenResponse({ description: 'Accès réservé aux chauffeurs uniquement' })
   async initializeRoute(
     @Body(new ValidationPipe({ transform: true, whitelist: true })) routeInitDto: RouteInitDto,
     @Request() req,
