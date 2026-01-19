@@ -4,13 +4,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RoutesController } from './routes.controller';
 import { RoutesService } from './routes.service';
-import { GoogleMapsService } from './services/google-maps.service';
+import { OpenStreetMapService } from './services/openstreetmap.service';
 import { RouteSessionService } from './services/route-session.service';
 import { RouteSession } from './entities/route-session.entity';
 
 /**
  * Module pour la gestion des itinéraires
- * Fournit les fonctionnalités de construction manuelle d'itinéraires avec Google Maps
+ * Fournit les fonctionnalités de construction manuelle d'itinéraires avec OpenStreetMap (OSRM)
  */
 @Module({
   imports: [
@@ -18,7 +18,7 @@ import { RouteSession } from './entities/route-session.entity';
     ScheduleModule.forRoot(), // Pour les tâches cron de nettoyage
   ],
   controllers: [RoutesController],
-  providers: [RoutesService, GoogleMapsService, RouteSessionService],
+  providers: [RoutesService, OpenStreetMapService, RouteSessionService],
   exports: [RoutesService],
 })
 export class RoutesModule {}

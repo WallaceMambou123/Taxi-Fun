@@ -2,20 +2,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RouteInitDto } from './dto/route-init.dto';
 import { AddWaypointDto } from './dto/add-waypoint.dto';
-import { GoogleMapsService } from './services/google-maps.service';
+import { OpenStreetMapService } from './services/openstreetmap.service';
 import { RouteSessionService } from './services/route-session.service';
 import { RouteResponse } from './interfaces/route-response.interface';
 
 /**
  * Service principal pour la gestion des itinéraires
- * Orchestre les appels entre GoogleMapsService et RouteSessionService
+ * Orchestre les appels entre OpenStreetMapService et RouteSessionService
  */
 @Injectable()
 export class RoutesService {
   private readonly logger = new Logger(RoutesService.name);
 
   constructor(
-    private readonly googleMapsService: GoogleMapsService,
+    private readonly openStreetMapService: OpenStreetMapService,
     private readonly routeSessionService: RouteSessionService,
   ) {}
 
@@ -41,7 +41,7 @@ export class RoutesService {
     );
 
     // Calculer la route initiale (sans waypoints)
-    const { mainRoute, alternatives } = await this.googleMapsService.computeRoutes(
+    const { mainRoute, alternatives } = await this.openStreetMapService.computeRoutes(
       routeInitDto.origin,
       routeInitDto.destination,
       [], // Pas de waypoints pour l'instant
@@ -51,7 +51,7 @@ export class RoutesService {
     );
 
     // Extraire des suggestions de prochains points d'intérêt
-    const suggestedIntersections = this.googleMapsService.extractSuggestedIntersections(mainRoute, 5);
+    const suggestedIntersections = this.openStreetMapService.extractSuggestedIntersections(mainRoute, 5);
 
     // Sauvegarder la route calculée dans la session
     await this.routeSessionService.updateSession(session.id, userId, {
@@ -99,7 +99,7 @@ export class RoutesService {
     );
 
     // Recalculer la route avec tous les waypoints
-    const { mainRoute, alternatives } = await this.googleMapsService.computeRoutes(
+    const { mainRoute, alternatives } = await this.openStreetMapService.computeRoutes(
       updatedSession.origin,
       updatedSession.destination,
       updatedSession.waypoints,
@@ -109,7 +109,7 @@ export class RoutesService {
     );
 
     // Extraire de nouvelles suggestions
-    const suggestedIntersections = this.googleMapsService.extractSuggestedIntersections(mainRoute, 5);
+    const suggestedIntersections = this.openStreetMapService.extractSuggestedIntersections(mainRoute, 5);
 
     // Sauvegarder la route recalculée
     await this.routeSessionService.updateSession(session.id, userId, {
@@ -169,7 +169,7 @@ export class RoutesService {
     }
 
     // Sinon, on recalcule la route
-    const { mainRoute, alternatives } = await this.googleMapsService.computeRoutes(
+    const { mainRoute, alternatives } = await this.openStreetMapService.computeRoutes(
       session.origin,
       session.destination,
       session.waypoints,

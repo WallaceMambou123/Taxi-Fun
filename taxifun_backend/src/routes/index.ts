@@ -15,7 +15,7 @@ export * from './interfaces/route-response.interface';
 
 // Services
 export * from './routes.service';
-export * from './services/google-maps.service';
+export * from './services/openstreetmap.service';
 export * from './services/route-session.service';
 
 // Module
