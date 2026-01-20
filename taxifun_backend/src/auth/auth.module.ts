@@ -1,31 +1,28 @@
-// src/auth/auth.module.ts
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
-import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PrismaModule } from '../prisma/prisma.module';
+import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
+import { ClientsModule } from '../clients/clients.module';
+import { DriversModule } from '../drivers/drivers.module';
+import { TwilioModule } from '../common/twilio/twilio.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User]),
-    PassportModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
-        signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN') || '1h',
-        },
-      }) as JwtModuleOptions,
-      inject: [ConfigService],
-    }),
-  ],
-  controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService, JwtModule],
+    imports: [
+        PrismaModule,
+        PassportModule,
+        JwtModule.register({
+            secret: process.env.JWT_SECRET || 'SUPER_SECRET_KEY',
+            signOptions: { expiresIn: '7d' }, // Token valide 7 jours pour mobile
+        }),
+        ClientsModule,
+        DriversModule,
+        TwilioModule,
+    ],
+    controllers: [AuthController],
+    providers: [AuthService, JwtStrategy],
+    exports: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule { }

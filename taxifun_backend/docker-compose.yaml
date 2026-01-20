@@ -1,0 +1,59 @@
+services:
+  # Base de données principale
+  db:
+    image: postgres:15 # Version complète, stable et performante
+    container_name: ${DB_HOST}
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - taxifun_postgres_data:/var/lib/postgresql/data
+
+  # Cache pour les positions GPS temps réel
+  cache:
+    image: redis:7 # Version complète avec tous les outils de debug
+    container_name: ${REDIS_HOST}
+    restart: always
+    ports:
+      - "6379:6379"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${API_HOST}
+    restart: always
+    # --- AJOUTS POUR L'OPTION A ---
+    volumes:
+      - .:/app # Lie ton dossier local au dossier /app du container
+      - /app/node_modules # IMPORTANT: Garde les modules du container isolés
+    command: npm run start:dev # Force le mode Watch de NestJS
+    # ------------------------------
+    ports:
+      - "3000:3000"
+      - "5555:5555"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - cache
+
+  # Interface graphique pour gérer ta base (Le "Bonus" confort)
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: ${PGADMIN_HOST}
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@taxifun.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+
+volumes:
+  taxifun_postgres_data:

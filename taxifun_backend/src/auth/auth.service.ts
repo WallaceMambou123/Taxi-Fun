@@ -1,61 +1,102 @@
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User, UserRole } from './entities/user.entity';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import * as bcrypt from 'bcrypt';
+import { Injectable, UnauthorizedException, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { RequestOtpDto, VerifyOtpDto, UserRole } from './dto/auth.dto';
+import { ClientsService } from '../clients/clients.service';
+import { DriversService } from '../drivers/drivers.service';
+import { InjectRedis } from '@nestjs-modules/ioredis';
+import Redis from 'ioredis';
+import { TWILIO_CLIENT } from '../common/twilio/twilio.module';
+import { Twilio } from 'twilio';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-    private jwtService: JwtService,
-  ) {}
+    constructor(
+        @Inject(TWILIO_CLIENT) private readonly twilioClient: Twilio,
+        private readonly configService: ConfigService,
+        @InjectRedis() private readonly redis: Redis,
+        private jwtService: JwtService,
+        private driversService: DriversService,
+        private clientsService: ClientsService,
+    ) { }
 
-  async register(registerDto: RegisterDto): Promise<User> {
-    const { email, password, role, phone } = registerDto;
+    async requestOtp(dto: RequestOtpDto) {
+        const { phoneNumber, role } = dto;
 
-    // Vérif si email existe déjà
-    const existingUser = await this.userRepository.findOne({ where: { email } });
-    if (existingUser) {
-      throw new BadRequestException('Email déjà utilisé');
+        // 1. Vérifier si l'utilisateur existe
+        const user = await this.getUser(phoneNumber, role);
+        if (!user) throw new NotFoundException('Utilisateur non trouvé');
+
+        // 2. Générer un OTP sécurisé
+        const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
+        // 3. Stocker dans Redis avec une expiration (ex: 300 secondes = 5 minutes)
+        const redisKey = `otp:${role}:${phoneNumber}`;
+        await this.redis.set(redisKey, otp, 'EX', 300);
+
+        // 4. Envoyer le SMS
+        //await this.sendSms(phoneNumber, `<#> Votre code TaxiFun est : ${otp}. Ne le partagez pas.`);
+        // Pour le dev, afficher dans la console
+        console.log(`OTP pour ${phoneNumber} (${role}): ${otp}`);
+
+        return { message: 'OTP envoyé avec succès' };
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    async verifyOtp(dto: VerifyOtpDto) {
+        const { phoneNumber, otpCode, role } = dto;
+        const redisKey = `otp:${role}:${phoneNumber}`;
 
-    // Créé user
-    const user = this.userRepository.create({
-      email,
-      password: hashedPassword,
-      role,
-      phone,
-      balance: 0,
-    });
+        // 1. Récupérer l'OTP dans Redis
+        const storedOtp = await this.redis.get(redisKey);
 
-    return this.userRepository.save(user);
-  }
+        if (!storedOtp || storedOtp !== otpCode) {
+            throw new UnauthorizedException('OTP invalide ou expiré');
+        }
 
-  async login(loginDto: LoginDto): Promise<{ accessToken: string }> {
-    const { email, password } = loginDto;
+        // 2. Supprimer l'OTP immédiatement après réussite
+        await this.redis.del(redisKey);
 
-    const user = await this.userRepository.findOne({ where: { email } });
-    if (!user) {
-      throw new UnauthorizedException('Identifiants incorrects');
+        // 3. Récupérer l'utilisateur
+        const user = await this.getUser(phoneNumber, role);
+        if (!user) throw new NotFoundException('Utilisateur introuvable');
+
+        return {
+            accessToken: this.jwtService.sign({ sub: user.id, role }),
+            user,
+        };
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Identifiants incorrects');
+    private async sendSms(phone: string, message: string) {
+        try {
+            const from = this.configService.get('TWILIO_PHONE_NUMBER');
+
+            const result = await this.twilioClient.messages.create({
+                body: message,
+                from: from,
+                to: phone, // Assure-toi que le phone est au format +237...
+            });
+
+            console.log(`[Twilio] SMS envoyé avec succès : ${result.sid}`);
+        } catch (error) {
+            console.error('[Twilio Error]', error);
+            // Optionnel : ne pas bloquer l'utilisateur si le SMS échoue en dev
+        }
     }
 
-    // Génère JWT
-    const payload = { email: user.email, sub: user.id, role: user.role };
-    const accessToken = this.jwtService.sign(payload);
+    // --- Méthodes privées d'aide ---
 
-    return { accessToken };
-  }
+    private async checkUserExists(phoneNumber: string, role: UserRole) {
+        const user = await this.getUser(phoneNumber, role);
+        if (!user) throw new NotFoundException(`${role} not found with this phone number`);
+    }
+
+    private async getUser(phoneNumber: string, role: UserRole) {
+        if (role === UserRole.DRIVER) {
+            return this.driversService.findByPhone(phoneNumber);
+        } else if (role === UserRole.CLIENT) {
+            return this.clientsService.findByPhone(phoneNumber); // Appel au nouveau service
+        }
+        // Admin géré différemment (email/password) normalement
+        throw new BadRequestException('Role not supported for OTP');
+    }
 }

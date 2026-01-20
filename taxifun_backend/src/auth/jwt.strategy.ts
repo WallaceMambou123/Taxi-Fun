@@ -1,19 +1,36 @@
-import { Injectable } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { ConfigService } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private configService: ConfigService) {
-    super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET'),
-    });
-  }
+    constructor(private prisma: PrismaService) {
+        super({
+            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+            ignoreExpiration: false,
+            secretOrKey: process.env.JWT_SECRET || 'SUPER_SECRET_KEY', // Met ça dans ton .env
+        });
+    }
 
-  async validate(payload: any) {
-    return { userId: payload.sub, email: payload.email, role: payload.role };
-  }
+    // Cette fonction s'exécute automatiquement quand une route est protégée
+    async validate(payload: any) {
+        // payload = { sub: 'uuid', role: 'DRIVER' }
+
+        let user;
+        if (payload.role === 'DRIVER') {
+            user = await this.prisma.driver.findUnique({ where: { id: payload.sub } });
+        } else if (payload.role === 'CLIENT') {
+            user = await this.prisma.client.findUnique({ where: { id: payload.sub } });
+        } else if (payload.role === 'ADMIN') {
+            user = await this.prisma.admin.findUnique({ where: { id: payload.sub } });
+        }
+
+        if (!user) {
+            throw new UnauthorizedException();
+        }
+
+        // Ajoute le rôle à l'objet user pour l'utiliser dans les Guards
+        return { ...user, role: payload.role };
+    }
 }

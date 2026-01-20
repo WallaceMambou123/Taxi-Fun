@@ -1,30 +1,35 @@
-// src/app.module.ts
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from './prisma/prisma.module';
+import { PrismaService } from './prisma/prisma.service';
+import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { User } from './auth/entities/user.entity';
+import { WalletsModule } from './wallets/wallets.module';
+import { ClientsModule } from './clients/clients.module';
+import { DriversModule } from './drivers/drivers.module';
+import { ItinerariesModule } from './itineraries/itineraries.module';
+import { TripsModule } from './trips/trips.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { AdminsModule } from './admins/admins.module';
+import { RedisModule } from '@nestjs-modules/ioredis';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true, // rend ConfigService disponible partout
-      envFilePath: '.env',
+    RedisModule.forRoot({
+      type: 'single',
+      url: process.env.REDIS_URL,
     }),
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT ?? '3306', 10),
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE,
-      entities: [User], // on ajoutera les entités plus tard
-      synchronize: true, // crée automatiquement les tables en dev (à désactiver en prod)
-      logging: true,    // utile pour voir les requêtes SQL au début
-    }),
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
     AuthModule,
+    WalletsModule,
+    ClientsModule,
+    DriversModule,
+    ItinerariesModule,
+    TripsModule,
+    ReviewsModule,
+    AdminsModule,
   ],
-  controllers: [],
-  providers: [],
+  providers: [AppService, PrismaService],
 })
-export class AppModule {}
+export class AppModule { }
