@@ -1,38 +1,40 @@
 services:
   # Base de données principale
   db:
-    image: postgres:15 # Version complète, stable et performante
-    container_name: ${DB_HOST}
+    image: postgres:15
+    container_name: taxifun-db
     restart: always
     environment:
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME:-admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-Mambou2025!}
+      POSTGRES_DB: ${DB_NAME:-taxifun_db}
     ports:
       - "5432:5432"
     volumes:
       - taxifun_postgres_data:/var/lib/postgresql/data
+    networks:
+      - taxifun-network
 
   # Cache pour les positions GPS temps réel
   cache:
-    image: redis:7 # Version complète avec tous les outils de debug
-    container_name: ${REDIS_HOST}
+    image: redis:7
+    container_name: taxifun-cache
     restart: always
     ports:
       - "6379:6379"
+    networks:
+      - taxifun-network
 
   api:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: ${API_HOST}
+    container_name: taxifun-api
     restart: always
-    # --- AJOUTS POUR L'OPTION A ---
     volumes:
-      - .:/app # Lie ton dossier local au dossier /app du container
-      - /app/node_modules # IMPORTANT: Garde les modules du container isolés
-    command: npm run start:dev # Force le mode Watch de NestJS
-    # ------------------------------
+      - .:/app
+      - /app/node_modules
+    command: npm run start:dev
     ports:
       - "3000:3000"
       - "5555:5555"
@@ -41,11 +43,13 @@ services:
     depends_on:
       - db
       - cache
+    networks:
+      - taxifun-network
 
-  # Interface graphique pour gérer ta base (Le "Bonus" confort)
+  # Interface graphique pour gérer ta base
   pgadmin:
     image: dpage/pgadmin4
-    container_name: ${PGADMIN_HOST}
+    container_name: taxifun-pgadmin
     restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@taxifun.com
@@ -54,6 +58,12 @@ services:
       - "8080:80"
     depends_on:
       - db
+    networks:
+      - taxifun-network
+
+networks:
+  taxifun-network:
+    driver: bridge
 
 volumes:
   taxifun_postgres_data:

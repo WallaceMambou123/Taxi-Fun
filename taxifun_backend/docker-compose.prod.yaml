@@ -1,0 +1,92 @@
+# ===========================================
+# TAXIFUN API - Production Docker Compose
+# ===========================================
+# Usage: docker compose -f docker-compose.prod.yaml up -d --build
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: ${DB_HOST:-taxifun-db}
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - taxifun_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - taxifun-network
+
+  # Redis Cache
+  cache:
+    image: redis:7-alpine
+    container_name: ${REDIS_HOST:-taxifun-cache}
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - taxifun_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - taxifun-network
+
+  # NestJS API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${API_HOST:-taxifun-api}
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - taxifun-network
+
+  # PgAdmin (optional - remove in production if not needed)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ${PGADMIN_HOST:-taxifun-pgadmin}
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@taxifun.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    networks:
+      - taxifun-network
+    profiles:
+      - tools
+
+networks:
+  taxifun-network:
+    driver: bridge
+
+volumes:
+  taxifun_postgres_data:
+  taxifun_redis_data:

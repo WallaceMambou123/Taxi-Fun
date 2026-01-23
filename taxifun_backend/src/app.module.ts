@@ -11,6 +11,7 @@ import { ItinerariesModule } from './itineraries/itineraries.module';
 import { TripsModule } from './trips/trips.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { AdminsModule } from './admins/admins.module';
+import { RoutesModule } from './routes/routes.module';
 import { RedisModule } from '@nestjs-modules/ioredis';
 
 @Module({
@@ -29,6 +30,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
     TripsModule,
     ReviewsModule,
     AdminsModule,
+    RoutesModule,
   ],
   providers: [AppService, PrismaService],
 })
