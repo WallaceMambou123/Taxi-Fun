@@ -35,6 +35,7 @@ services:
     name: taxifun-redis
     plan: free
     maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
 
 databases:
   # PostgreSQL Database
