@@ -3,8 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { RequestOtpDto, VerifyOtpDto, UserRole } from './dto/auth.dto';
 import { ClientsService } from '../clients/clients.service';
 import { DriversService } from '../drivers/drivers.service';
-import { InjectRedis } from '@nestjs-modules/ioredis';
-import Redis from 'ioredis';
+import { CacheService } from '../common/cache/cache.service';
 import { TWILIO_CLIENT } from '../common/twilio/twilio.module';
 import { Twilio } from 'twilio';
 import { ConfigService } from '@nestjs/config';
@@ -14,7 +13,7 @@ export class AuthService {
     constructor(
         @Inject(TWILIO_CLIENT) private readonly twilioClient: Twilio,
         private readonly configService: ConfigService,
-        @InjectRedis() private readonly redis: Redis,
+        private readonly cacheService: CacheService,
         private jwtService: JwtService,
         private driversService: DriversService,
         private clientsService: ClientsService,
@@ -30,9 +29,9 @@ export class AuthService {
         // 2. Générer un OTP sécurisé
         const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-        // 3. Stocker dans Redis avec une expiration (ex: 300 secondes = 5 minutes)
-        const redisKey = `otp:${role}:${phoneNumber}`;
-        await this.redis.set(redisKey, otp, 'EX', 300);
+        // 3. Stocker dans le cache avec une expiration (5 minutes)
+        const cacheKey = `otp:${role}:${phoneNumber}`;
+        await this.cacheService.set(cacheKey, otp, 300);
 
         // 4. Envoyer le SMS
         //await this.sendSms(phoneNumber, `<#> Votre code TaxiFun est : ${otp}. Ne le partagez pas.`);
@@ -44,17 +43,17 @@ export class AuthService {
 
     async verifyOtp(dto: VerifyOtpDto) {
         const { phoneNumber, otpCode, role } = dto;
-        const redisKey = `otp:${role}:${phoneNumber}`;
+        const cacheKey = `otp:${role}:${phoneNumber}`;
 
-        // 1. Récupérer l'OTP dans Redis
-        const storedOtp = await this.redis.get(redisKey);
+        // 1. Récupérer l'OTP dans le cache
+        const storedOtp = await this.cacheService.get(cacheKey);
 
         if (!storedOtp || storedOtp !== otpCode) {
             throw new UnauthorizedException('OTP invalide ou expiré');
         }
 
         // 2. Supprimer l'OTP immédiatement après réussite
-        await this.redis.del(redisKey);
+        await this.cacheService.del(cacheKey);
 
         // 3. Récupérer l'utilisateur
         const user = await this.getUser(phoneNumber, role);

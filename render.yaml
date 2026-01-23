@@ -18,24 +18,12 @@ services:
         fromDatabase:
           name: taxifun-db
           property: connectionString
-      - key: REDIS_URL
-        fromService:
-          name: taxifun-redis
-          type: redis
-          property: connectionString
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 7d
     healthCheckPath: /
     autoDeploy: true
-
-  # Redis Cache
-  - type: redis
-    name: taxifun-redis
-    plan: free
-    maxmemoryPolicy: allkeys-lru
-    ipAllowList: []
 
 databases:
   # PostgreSQL Database

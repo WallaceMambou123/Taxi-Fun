@@ -12,15 +12,12 @@ import { TripsModule } from './trips/trips.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { AdminsModule } from './admins/admins.module';
 import { RoutesModule } from './routes/routes.module';
-import { RedisModule } from '@nestjs-modules/ioredis';
+import { CacheModule } from './common/cache/cache.module';
 
 @Module({
   imports: [
-    RedisModule.forRoot({
-      type: 'single',
-      url: process.env.REDIS_URL,
-    }),
     ConfigModule.forRoot({ isGlobal: true }),
+    CacheModule,
     PrismaModule,
     AuthModule,
     WalletsModule,
