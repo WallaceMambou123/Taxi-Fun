@@ -7,6 +7,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
 import { ClientsModule } from '../clients/clients.module';
 import { DriversModule } from '../drivers/drivers.module';
+import { AdminsModule } from '../admins/admins.module';
 import { TwilioModule } from '../common/twilio/twilio.module';
 
 @Module({
@@ -19,6 +20,7 @@ import { TwilioModule } from '../common/twilio/twilio.module';
         }),
         ClientsModule,
         DriversModule,
+        AdminsModule,
         TwilioModule,
     ],
     controllers: [AuthController],

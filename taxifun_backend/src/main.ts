@@ -5,6 +5,16 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Debug: log Authorization header on every incoming request to detect phantom tokens
+  app.use((req, _res, next) => {
+    try {
+      console.log('Incoming Authorization header:', req.headers?.authorization);
+    } catch (e) {
+      // ignore
+    }
+    next();
+  });
+
   // --- CONFIGURATION SWAGGER ---
   const config = new DocumentBuilder()
     .setTitle('TAXIFUN API')

@@ -1,8 +1,9 @@
 import { Injectable, UnauthorizedException, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { RequestOtpDto, VerifyOtpDto, UserRole } from './dto/auth.dto';
+import { RequestOtpDto, VerifyOtpDto, UserRole, AdminLoginDto } from './dto/auth.dto';
 import { ClientsService } from '../clients/clients.service';
 import { DriversService } from '../drivers/drivers.service';
+import { AdminsService } from '../admins/admins.service';
 import { CacheService } from '../common/cache/cache.service';
 import { TWILIO_CLIENT } from '../common/twilio/twilio.module';
 import { Twilio } from 'twilio';
@@ -17,29 +18,33 @@ export class AuthService {
         private jwtService: JwtService,
         private driversService: DriversService,
         private clientsService: ClientsService,
+        private adminsService: AdminsService,
     ) { }
 
-    async requestOtp(dto: RequestOtpDto) {
-        const { phoneNumber, role } = dto;
+   async requestOtp(dto: RequestOtpDto) {
+    const { phoneNumber, role } = dto;
 
-        // 1. Vérifier si l'utilisateur existe
-        const user = await this.getUser(phoneNumber, role);
-        if (!user) throw new NotFoundException('Utilisateur non trouvé');
+    // 1. Vérifier si l'utilisateur existe
+    const user = await this.getUser(phoneNumber, role);
+    if (!user) throw new NotFoundException('Utilisateur non trouvé');
 
-        // 2. Générer un OTP sécurisé
-        const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    // 2. Générer l'OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-        // 3. Stocker dans le cache avec une expiration (5 minutes)
-        const cacheKey = `otp:${role}:${phoneNumber}`;
-        await this.cacheService.set(cacheKey, otp, 300);
+    // 3. Stocker dans le cache
+    const cacheKey = `otp:${role}:${phoneNumber}`;
+    await this.cacheService.set(cacheKey, otp, 300);
 
-        // 4. Envoyer le SMS
-        //await this.sendSms(phoneNumber, `<#> Votre code TaxiFun est : ${otp}. Ne le partagez pas.`);
-        // Pour le dev, afficher dans la console
-        console.log(`OTP pour ${phoneNumber} (${role}): ${otp}`);
+    // 4. LOGIQUE DE TEST POUR SWAGGER
+    // On vérifie si on est en mode local/dev
+    const isDev = this.configService.get('NODE_ENV') !== 'production';
 
-        return { message: 'OTP envoyé avec succès' };
-    }
+    return { 
+        message: 'OTP envoyé avec succès',
+        // On ajoute l'OTP ici UNIQUEMENT pour les tests
+        debugCode: isDev ? otp : 'Envoyé par SMS' 
+    };
+}
 
     async verifyOtp(dto: VerifyOtpDto) {
         const { phoneNumber, otpCode, role } = dto;
@@ -93,9 +98,24 @@ export class AuthService {
         if (role === UserRole.DRIVER) {
             return this.driversService.findByPhone(phoneNumber);
         } else if (role === UserRole.CLIENT) {
-            return this.clientsService.findByPhone(phoneNumber); // Appel au nouveau service
+            return this.clientsService.findByPhone(phoneNumber);
         }
-        // Admin géré différemment (email/password) normalement
+        // Admin gere differemment (email/password)
         throw new BadRequestException('Role not supported for OTP');
+    }
+
+    /**
+     * Connexion administrateur par email/mot de passe
+     */
+    async adminLogin(dto: AdminLoginDto) {
+        const { email, password } = dto;
+
+        // Valider les credentials
+        const admin = await this.adminsService.validateCredentials(email, password);
+
+        return {
+            accessToken: this.jwtService.sign({ sub: admin.id, role: UserRole.ADMIN }),
+            user: admin,
+        };
     }
 }

@@ -16,6 +16,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // Cette fonction s'exécute automatiquement quand une route est protégée
     async validate(payload: any) {
         // payload = { sub: 'uuid', role: 'DRIVER' }
+        console.log('JWT Payload:', payload); // Log the payload for debugging
 
         let user;
         if (payload.role === 'DRIVER') {
@@ -27,8 +28,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         }
 
         if (!user) {
+            console.error('User not found for payload:', payload); // Log error if user is not found
             throw new UnauthorizedException();
         }
+
+        console.log('Validated User:', user); // Log the validated user
 
         // Ajoute le rôle à l'objet user pour l'utiliser dans les Guards
         return { ...user, role: payload.role };
