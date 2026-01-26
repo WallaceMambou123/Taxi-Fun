@@ -9,6 +9,7 @@ import { ClientsModule } from '../clients/clients.module';
 import { DriversModule } from '../drivers/drivers.module';
 import { AdminsModule } from '../admins/admins.module';
 import { TwilioModule } from '../common/twilio/twilio.module';
+import { FirebaseAuthService } from './firebase-auth.service';
 
 @Module({
     imports: [
@@ -24,7 +25,7 @@ import { TwilioModule } from '../common/twilio/twilio.module';
         TwilioModule,
     ],
     controllers: [AuthController],
-    providers: [AuthService, JwtStrategy],
-    exports: [AuthService],
+    providers: [AuthService, JwtStrategy, FirebaseAuthService],
+    exports: [AuthService, FirebaseAuthService],
 })
 export class AuthModule { }
