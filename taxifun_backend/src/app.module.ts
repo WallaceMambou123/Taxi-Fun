@@ -12,12 +12,14 @@ import { TripsModule } from './trips/trips.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { AdminsModule } from './admins/admins.module';
 import { RoutesModule } from './routes/routes.module';
-import { CacheModule } from './common/cache/cache.module';
+import { RedisModule } from './common/redis/redis.module';
+import { SmsModule } from './common/sms/sms.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    CacheModule,
+    RedisModule,
+    SmsModule,
     PrismaModule,
     AuthModule,
     WalletsModule,

@@ -1,0 +1,39 @@
+# Docker Compose pour développement LOCAL
+# Lance uniquement PostgreSQL et Redis
+# L'API est lancée en local avec: npm run start:dev
+
+services:
+  db:
+    image: postgres:15
+    container_name: taxifun-db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: Mambou2025
+      POSTGRES_DB: taxifun_db
+      POSTGRES_HOST_AUTH_METHOD: md5
+    ports:
+      - "5432:5432"
+    volumes:
+      - taxifun_postgres_data:/var/lib/postgresql/data
+    networks:
+      - taxifun-network
+    command: >
+      postgres
+      -c listen_addresses='*'
+
+  cache:
+    image: redis:7
+    container_name: taxifun-cache
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - taxifun-network
+
+networks:
+  taxifun-network:
+    driver: bridge
+
+volumes:
+  taxifun_postgres_data:

@@ -8,8 +8,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { ClientsModule } from '../clients/clients.module';
 import { DriversModule } from '../drivers/drivers.module';
 import { AdminsModule } from '../admins/admins.module';
-import { TwilioModule } from '../common/twilio/twilio.module';
-import { FirebaseAuthService } from './firebase-auth.service';
+import { SmsModule } from '../common/sms/sms.module';
 
 @Module({
     imports: [
@@ -17,15 +16,15 @@ import { FirebaseAuthService } from './firebase-auth.service';
         PassportModule,
         JwtModule.register({
             secret: process.env.JWT_SECRET || 'SUPER_SECRET_KEY',
-            signOptions: { expiresIn: '7d' }, // Token valide 7 jours pour mobile
+            signOptions: { expiresIn: '7d' },
         }),
         ClientsModule,
         DriversModule,
         AdminsModule,
-        TwilioModule,
+        SmsModule,
     ],
     controllers: [AuthController],
-    providers: [AuthService, JwtStrategy, FirebaseAuthService],
-    exports: [AuthService, FirebaseAuthService],
+    providers: [AuthService, JwtStrategy],
+    exports: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}
