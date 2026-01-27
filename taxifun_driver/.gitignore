@@ -1,0 +1,28 @@
+# --- Dart/Flutter ---
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# --- Android ---
+android/local.properties       <-- TRÈS IMPORTANT : évite les erreurs de chemin SDK
+android/key.properties
+*.keystore
+*.jks
+
+# --- iOS ---
+ios/.pbpcloud
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+Pods/
+
+# --- IDEs ---
+.idea/
+.vscode/
+*.iml
+
+#git@github.com:WallaceMambou123/Taxi-Fun.git
+#https://github.com/WallaceMambou123/Taxi-Fun.git

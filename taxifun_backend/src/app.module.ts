@@ -1,0 +1,37 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from './prisma/prisma.module';
+import { PrismaService } from './prisma/prisma.service';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
+import { WalletsModule } from './wallets/wallets.module';
+import { ClientsModule } from './clients/clients.module';
+import { DriversModule } from './drivers/drivers.module';
+import { ItinerariesModule } from './itineraries/itineraries.module';
+import { TripsModule } from './trips/trips.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { AdminsModule } from './admins/admins.module';
+import { RoutesModule } from './routes/routes.module';
+import { CacheModule } from './common/cache/cache.module';
+import { AuthService } from './auth/auth.service';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    CacheModule,
+    PrismaModule,
+    AuthModule,
+    WalletsModule,
+    ClientsModule,
+    DriversModule,
+    ItinerariesModule,
+    TripsModule,
+    ReviewsModule,
+    AdminsModule,
+    RoutesModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService, PrismaService],
+})
+export class AppModule { }
