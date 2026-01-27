@@ -135,7 +135,7 @@ class PermisUploadScreen extends StatelessWidget {
                               color: Colors.orange,
                             ),
                             const SizedBox(height: 16),
-                            const Text(
+                            Text(
                               'Capturez ou chargez le document',
                               style: TextStyle(
                                 fontSize: 15,

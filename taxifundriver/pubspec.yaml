@@ -12,6 +12,9 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   pin_code_fields: ^8.0.1   # optionnel – très beau pour OTP
+  dio: ^5.7.0
+  shared_preferences: ^2.3.2
+  fluttertoast: ^8.2.8  # Pour messages sympas
 
 dev_dependencies:
   flutter_test:

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'otp_verification_screen.dart';
-import 'document_upload_screen.dart';  // Pour pièce d’identité
+import 'document_upload_screen.dart';
+import '../core/driver_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -29,31 +31,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _continueRegistration() {
+  Future<void> _continueRegistration() async {
     if (_formKey.currentState?.validate() ?? false) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Inscription validée ! Passage à l\'upload de document...'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      final phone = '+237${_phoneController.text.trim()}';
 
-      // Navigation vers l'écran pièce d'identité
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const DocumentUploadScreen(
-            title: 'Pièce d\'identité',
-            documentType: 'cni',
+      try {
+        // 1. Créer le chauffeur
+        await DriverService.registerDriver(phone);
+
+        // 2. Demander OTP
+        await DriverService.requestOtp(phone);
+
+        // 3. Aller vers OTP screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => OtpVerificationScreen(phoneNumber: _phoneController.text.trim()),
           ),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez remplir correctement tous les champs'),
+        );
+      } catch (e) {
+        Fluttertoast.showToast(
+          msg: 'Erreur : $e',
           backgroundColor: Colors.red,
-        ),
+        );
+      }
+    } else {
+      Fluttertoast.showToast(
+        msg: 'Veuillez remplir tous les champs',
+        backgroundColor: Colors.red,
       );
     }
   }
@@ -94,47 +99,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
-                    // Photo de profil + icône caméra (plus grand et mieux centré)
+                    // Photo de profil + icône caméra
                     Stack(
                       alignment: Alignment.bottomRight,
                       children: [
                         CircleAvatar(
-                          radius: 70,
-                          backgroundColor: Colors.grey.shade100,
+                          radius: 60,
+                          backgroundColor: Colors.grey.shade200,
                           child: const Icon(
-                            Icons.person_outline_rounded,
-                            size: 100,
+                            Icons.person,
+                            size: 80,
                             color: Colors.grey,
                           ),
                         ),
-                        Positioned(
-                          bottom: 4,
-                          right: 4,
-                          child: CircleAvatar(
-                            radius: 26,
-                            backgroundColor: Colors.orange,
-                            child: const Icon(
-                              Icons.camera_alt,
-                              color: Colors.white,
-                              size: 26,
-                            ),
-                          ),
+                        CircleAvatar(
+                          radius: 22,
+                          backgroundColor: Colors.orange,
+                          child: const Icon(Icons.camera_alt, color: Colors.white, size: 22),
                         ),
                       ],
                     ),
 
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 32),
 
-                    // Toggle Free / Business amélioré
+                    // Toggle Free / Business
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.orange.shade50,
-                        borderRadius: BorderRadius.circular(50),
-                        border: Border.all(color: Colors.orange.shade200, width: 1.5),
+                        color: Colors.orange.shade100,
+                        borderRadius: BorderRadius.circular(30),
                       ),
-                      padding: const EdgeInsets.all(6),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -144,79 +139,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 56),
+                    const SizedBox(height: 40),
 
-                    _buildTextField(
-                      label: 'Prénom',
-                      controller: _firstNameController,
-                      validator: (v) => v?.trim().isEmpty ?? true ? 'Champ obligatoire' : null,
-                    ),
-                    const SizedBox(height: 24),
+                    _buildTextField('First name', _firstNameController),
+                    const SizedBox(height: 20),
+                    _buildTextField('Last name', _lastNameController),
+                    const SizedBox(height: 20),
+                    _buildTextField('Email address', _emailController, keyboardType: TextInputType.emailAddress),
+                    const SizedBox(height: 20),
+                    _buildTextField('Phone', _phoneController, keyboardType: TextInputType.phone),
+                    const SizedBox(height: 20),
+                    _buildTextField('Address', _addressController),
 
-                    _buildTextField(
-                      label: 'Nom',
-                      controller: _lastNameController,
-                      validator: (v) => v?.trim().isEmpty ?? true ? 'Champ obligatoire' : null,
-                    ),
-                    const SizedBox(height: 24),
-
-                    _buildTextField(
-                      label: 'Adresse email',
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (v) {
-                        if (v?.trim().isEmpty ?? true) return 'Champ obligatoire';
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v!)) {
-                          return 'Email invalide';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24),
-
-                    _buildTextField(
-                      label: 'Téléphone',
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      validator: (v) {
-                        if (v?.trim().isEmpty ?? true) return 'Champ obligatoire';
-                        if (v!.trim().length < 8) return 'Au moins 8 chiffres';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24),
-
-                    _buildTextField(
-                      label: 'Adresse',
-                      controller: _addressController,
-                      validator: (v) => v?.trim().isEmpty ?? true ? 'Champ obligatoire' : null,
-                    ),
-
-                    const SizedBox(height: 64),
+                    const SizedBox(height: 40),
 
                     SizedBox(
                       width: double.infinity,
-                      height: 60,
+                      height: 56,
                       child: ElevatedButton.icon(
                         onPressed: _continueRegistration,
-                        icon: const Icon(Icons.arrow_forward, size: 24),
+                        icon: const Icon(Icons.arrow_forward, size: 22),
                         label: const Text(
-                          'Continuer',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                          'Continue',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          elevation: 4,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                          elevation: 2,
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
@@ -231,49 +187,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return GestureDetector(
       onTap: () => setState(() => _selectedType = label),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected ? Colors.orange : Colors.transparent,
-          borderRadius: BorderRadius.circular(40),
+          borderRadius: BorderRadius.circular(30),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.orange.shade800,
-            fontWeight: FontWeight.w700,
-            fontSize: 17,
+            color: isSelected ? Colors.white : Colors.orange,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTextField({
-    required String label,
-    required TextEditingController controller,
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller, {
     TextInputType keyboardType = TextInputType.text,
-    String? Function(String?)? validator,
   }) {
-    return TextFormField(
+    return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.grey.shade700, fontSize: 15),
-        enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.orange.shade300, width: 2),
+        labelStyle: const TextStyle(color: Colors.black54),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.orange, width: 1.5),
         ),
         focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.orange, width: 3),
+          borderSide: BorderSide(color: Colors.orange, width: 2.5),
         ),
-        errorBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.redAccent, width: 2),
-        ),
-        focusedErrorBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.redAccent, width: 3),
-        ),
-        errorStyle: const TextStyle(color: Colors.redAccent, fontSize: 13),
       ),
     );
   }

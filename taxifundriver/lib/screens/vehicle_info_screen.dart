@@ -86,7 +86,7 @@ class _VehicleInfoScreenState extends State<VehicleInfoScreen> {
                           color: Colors.orange,
                         ),
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           'Photo du véhicule',
                           style: TextStyle(
                             fontSize: 16,
