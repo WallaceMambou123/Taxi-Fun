@@ -1,8 +1,5 @@
-// lib/features/auth/presentation/screens/verify_otp_screen.dart
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
-
-// core imports
+import 'package:taxifun/features/auth/data/auth_repository.dart';
 import 'package:taxifun_core/taxifun_core.dart';
 
 class VerifyOtpScreen extends StatefulWidget {
@@ -14,15 +11,16 @@ class VerifyOtpScreen extends StatefulWidget {
 
 class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
   final TextEditingController _otpController = TextEditingController();
-  final ApiClient _apiClient = ApiClient();
+
+  // Utilisation de notre repository centralisé
+  final AuthRepository _authRepo = AuthRepository();
 
   bool _isLoading = false;
-  String? _phoneNumber; // On le récupère des arguments
+  String? _phoneNumber;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Récupération du numéro passé depuis LoginScreen
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is String) {
       _phoneNumber = args;
@@ -30,42 +28,34 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
   }
 
   Future<void> _verifyOtp() async {
-    if (_otpController.text.length != 4) return;
+    // Validation locale rapide (ex: ton backend attend 4 chiffres)
+    if (_otpController.text.length < 4) {
+      _showSnackBar("Veuillez entrer le code complet", isError: true);
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
-      final response = await _apiClient.dio.post(
-        '/auth/otp/verify',
-        data: {
-          "phoneNumber": _phoneNumber,
-          "otpCode": _otpController.text.trim(), //to int
-          "role": "CLIENT", // Important pour ton backend NestJS
-        },
+      // Le repository fait tout : Appel API + Sauvegarde du Token JWT
+      final bool isSuccess = await _authRepo.verifyOtp(
+        _phoneNumber ?? "",
+        _otpController.text.trim(),
       );
 
-      // TODO: Sauvegarder le token (response.data['token']) dans SecureStorage
-      print("TOKEN REÇU: ${response.data}");
+      if (isSuccess && mounted) {
+        _showSnackBar("Connexion réussie !", isError: false);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Connexion réussie !"),
-            backgroundColor: Colors.green,
-          ),
-        );
+        // Redirection vers l'accueil en vidant la pile de navigation
         Navigator.pushNamedAndRemoveUntil(
           context,
           '/HomeScreen',
           (route) => false,
         );
       }
-    } on DioException catch (e) {
-      final msg = e.response?.data['message'] ?? "Code incorrect";
+    } catch (errorMessage) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.red),
-        );
+        _showSnackBar(errorMessage.toString(), isError: true);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -73,19 +63,15 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
   }
 
   Future<void> _resendCode() async {
-    // Logique pour rappeler /auth/otp/request
     try {
-      await _apiClient.dio.post(
-        '/auth/otp/request',
-        data: {"phoneNumber": _phoneNumber, "role": "CLIENT"},
-      );
+      await _authRepo.requestOtp(_phoneNumber ?? "");
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Nouveau code envoyé !")));
+        _showSnackBar("Nouveau code envoyé !");
       }
-    } catch (e) {
-      // Gérer l'erreur silencieusement ou via SnackBar
+    } catch (errorMessage) {
+      if (mounted) {
+        _showSnackBar(errorMessage.toString(), isError: true);
+      }
     }
   }
 
@@ -97,7 +83,11 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.black,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -108,8 +98,6 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-
-              // Titre et Sous-titre
               const Text(
                 "Vérification du code",
                 style: TextStyle(
@@ -120,39 +108,41 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
               ),
               const SizedBox(height: 10),
               Text(
-                "Entrez le code à 4 chiffres envoyé au $_phoneNumber",
+                "Entrez le code envoyé au $_phoneNumber",
                 style: const TextStyle(fontSize: 15, color: Colors.grey),
               ),
-
               const SizedBox(height: 50),
 
-              // 1. Widget séparé pour les 4 cases
               Center(
                 child: OtpInputField(
                   controller: _otpController,
-                  onCompleted: (val) =>
-                      _verifyOtp(), // Auto-submit quand rempli
+                  onCompleted: (val) => _verifyOtp(),
                 ),
               ),
 
               const SizedBox(height: 40),
-
-              // 2. Widget séparé pour le Timer
               OtpResendTimer(onResend: _resendCode),
-
               const Spacer(),
 
-              // 3. Bouton taxi (Réutilisé)
               TaxiButton(
-                title: 'Vérification',
+                title: 'Vérifier',
                 isLoading: _isLoading,
                 onPressed: _verifyOtp,
               ),
-
               const SizedBox(height: 50),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }

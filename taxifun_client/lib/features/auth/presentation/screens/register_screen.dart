@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:taxifun/features/auth/data/auth_repository.dart';
 import 'package:taxifun_core/taxifun_core.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
@@ -10,9 +11,44 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  final Color orangeColor = const Color(0xFFEC8C01);
-  bool _agreeToTerms = false; // Initialisé à false
+  // 1. Contrôleurs pour récupérer les valeurs
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final AuthRepository _authRepo = AuthRepository();
+
+  PhoneNumber _phoneNumber = PhoneNumber(isoCode: 'CM');
+  bool _agreeToTerms = false;
   String? _selectedGender;
+  bool _isLoading = false;
+
+  // 2. Fonction de soumission
+  Future<void> _handleRegister() async {
+    if (_nameController.text.isEmpty || _selectedGender == null) {
+      _showSnackBar("Veuillez remplir tous les champs", isError: true);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _authRepo.register(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        phone: _phoneNumber.phoneNumber ?? "",
+        gender: _selectedGender!,
+      );
+
+      if (mounted) {
+        _showSnackBar("Compte créé ! Veuillez valider votre numéro.");
+        // Après inscription, on envoie vers le login pour déclencher l'OTP
+        Navigator.pushReplacementNamed(context, '/LoginScreen');
+      }
+    } catch (e) {
+      if (mounted) _showSnackBar(e.toString(), isError: true);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,33 +64,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          // Plus simple que CustomScrollView pour ce cas
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-                Text(
+                const Text(
                   'Inscription',
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: orangeColor,
+                    color: AppTheme.primaryOrange,
                   ),
                 ),
                 const SizedBox(height: 40),
 
-                _buildTextField(hint: 'Name'),
+                _buildTextField(
+                  hint: 'Nom complet',
+                  controller: _nameController,
+                ),
                 const SizedBox(height: 20),
 
                 _buildTextField(
                   hint: 'Email',
                   type: TextInputType.emailAddress,
+                  controller: _emailController,
                 ),
                 const SizedBox(height: 20),
 
-                TaxiFunPhoneInput(onInputChanged: (PhoneNumber p1) {}),
+                TaxiFunPhoneInput(
+                  initialValue: _phoneNumber,
+                  onInputChanged: (value) => _phoneNumber = value,
+                ),
                 const SizedBox(height: 20),
 
                 _buildGenderDropdown(),
@@ -62,14 +104,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 _buildTermsCheckbox(),
 
-                const SizedBox(height: 60), // Remplace le Spacer problématique
+                const SizedBox(height: 60),
 
                 TaxiButton(
                   title: "S'Inscrire",
-                  isLoading: false,
-                  onPressed: _agreeToTerms
-                      ? onSubmit()
-                      : null, // Désactivé si non coché
+                  isLoading: _isLoading,
+                  // On désactive le bouton si les conditions ne sont pas cochées
+                  onPressed: _agreeToTerms ? _handleRegister : null,
                 ),
 
                 const SizedBox(height: 20),
@@ -77,9 +118,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 CustomAuthFooter(
                   label: "Vous avez déjà un compte ?",
                   actionText: "Connectez-vous",
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/LoginScreen');
-                  },
+                  onPressed: () => Navigator.pushNamed(context, '/LoginScreen'),
                 ),
                 const SizedBox(height: 30),
               ],
@@ -90,34 +129,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  // --- WIDGETS DE CONSTRUCTION (DÉPLACÉS ICI POUR ACCÉDER À L'ÉTAT) ---
+  // --- Widgets de construction ---
 
   Widget _buildTextField({
     required String hint,
+    required TextEditingController controller,
     TextInputType type = TextInputType.text,
   }) {
     return TextField(
+      controller: controller,
       keyboardType: type,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: Colors.grey),
         filled: true,
         fillColor: Colors.grey[50],
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: orangeColor, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 18,
+          borderSide: const BorderSide(color: AppTheme.primaryOrange, width: 2),
         ),
       ),
     );
@@ -127,18 +156,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return DropdownButtonFormField<String>(
       value: _selectedGender,
       decoration: InputDecoration(
-        hintText: 'Gender',
+        hintText: 'Genre',
         filled: true,
         fillColor: Colors.grey[50],
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: orangeColor, width: 2),
-        ),
       ),
-      items: ['Male', 'Female', 'Other'].map((String gender) {
-        return DropdownMenuItem<String>(value: gender, child: Text(gender));
-      }).toList(),
+      items: ['Male', 'Female']
+          .map((gender) => DropdownMenuItem(value: gender, child: Text(gender)))
+          .toList(),
       onChanged: (value) => setState(() => _selectedGender = value),
     );
   }
@@ -148,41 +173,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
       children: [
         Checkbox(
           value: _agreeToTerms,
-          activeColor: Colors.green,
-          onChanged: (value) {
-            setState(() {
-              _agreeToTerms = value ?? false;
-            });
-          },
+          activeColor: AppTheme.primaryOrange,
+          onChanged: (value) => setState(() => _agreeToTerms = value ?? false),
         ),
-        Expanded(
-          child: RichText(
-            text: TextSpan(
-              text: 'By signing up, you agree to the ',
-              style: const TextStyle(color: Colors.black87, fontSize: 14),
-              children: [
-                TextSpan(
-                  text: 'Terms of service',
-                  style: TextStyle(
-                    color: orangeColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const TextSpan(text: ' and '),
-                TextSpan(
-                  text: 'Privacy policy.',
-                  style: TextStyle(
-                    color: orangeColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        const Expanded(child: Text('J\'accepte les conditions d\'utilisation')),
       ],
     );
   }
 
-  onSubmit() {}
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
+  }
 }

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:dio/dio.dart';
-import 'package:intl_phone_number_input/intl_phone_number_input.dart'; // Nécessaire pour le type PhoneNumber
-
-// core imports
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
+import 'package:taxifun/features/auth/data/auth_repository.dart';
 import 'package:taxifun_core/taxifun_core.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -14,18 +12,14 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // --- 1. Gestion de l'état du Téléphone ---
-  // On initialise avec le code ISO par défaut (Cameroun)
   PhoneNumber _phoneNumber = PhoneNumber(isoCode: 'CM');
   bool _isPhoneValid = false;
   bool _isLoading = false;
 
-  // Utilisation de l'ApiClient centralisé
-  final ApiClient _apiClient = ApiClient();
+  // On instancie le repository au lieu de l'ApiClient directement
+  final AuthRepository _authRepo = AuthRepository();
 
   Future<void> _handleOtpRequest() async {
-    // --- 2. Nouvelle Validation ---
-    // On vérifie le booléen mis à jour par le widget
     if (!_isPhoneValid) {
       _showSnackBar("Veuillez entrer un numéro valide", isError: true);
       return;
@@ -34,27 +28,24 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // --- 3. Envoi du numéro formaté ---
-      // _phoneNumber.phoneNumber contient déjà le format international (+237...)
-      final response = await _apiClient.dio.post(
-        '/auth/otp/request',
-        data: {"phoneNumber": _phoneNumber.phoneNumber, "role": "CLIENT"},
-      );
+      // Utilisation du repository simplifié
+      // On envoie le numéro formatté (+237...)
+      await _authRepo.requestOtp(_phoneNumber.phoneNumber!);
 
       if (mounted) {
         _showSnackBar("Code de vérification envoyé !");
 
-        // On passe le numéro à l'écran suivant
         Navigator.pushNamed(
           context,
           '/VerifyOtpScreen',
           arguments: _phoneNumber.phoneNumber,
         );
       }
-    } on DioException catch (e) {
-      final message =
-          e.response?.data['message'] ?? "Erreur de connexion au serveur";
-      _showSnackBar(message, isError: true);
+    } catch (errorMessage) {
+      // Le repository renvoie maintenant directement le message d'erreur
+      if (mounted) {
+        _showSnackBar(errorMessage.toString(), isError: true);
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -65,7 +56,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Indispensable pour éviter que le clavier ne crée des erreurs de layout
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
@@ -74,14 +64,12 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 28.0),
               child: CustomScrollView(
-                // Empêche le rebond bizarre si le contenu est petit
                 physics: const AlwaysScrollableScrollPhysics(
                   parent: BouncingScrollPhysics(),
                 ),
                 slivers: [
                   SliverFillRemaining(
-                    hasScrollBody:
-                        false, // Permet à la Column d'utiliser Spacer()
+                    hasScrollBody: false,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -99,8 +87,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               setState(() => _isPhoneValid = isValid),
                         ),
 
-                        // --- LE MAGICIEN ---
-                        // Ce Spacer va pousser tout ce qui suit vers le bas
                         const Spacer(),
 
                         TaxiButton(
@@ -118,7 +104,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               Navigator.pushNamed(context, '/RegisterScreen'),
                         ),
 
-                        // Un petit espace final pour ne pas coller au bord de l'écran
                         const SizedBox(height: 30),
                       ],
                     ),
@@ -132,16 +117,11 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // --- Sous-Widgets ---
+  // --- Sous-Widgets inchangés ---
 
   Widget _buildBackgroundPattern() {
     return Positioned.fill(
-      child: SvgPicture.asset(
-        'assets/images/Group.svg',
-        fit: BoxFit.cover,
-        // Correction : Gestion des erreurs si le SVG n'a pas de propriété couleur modifiable
-        // colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.03), BlendMode.srcIn),
-      ),
+      child: SvgPicture.asset('assets/images/Group.svg', fit: BoxFit.cover),
     );
   }
 
@@ -154,8 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
           style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
-            color:
-                AppTheme.primaryOrange, // Assure-toi que AppTheme est importé
+            color: AppTheme.primaryOrange,
           ),
         ),
         SizedBox(height: 10),
