@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { IsString, IsNotEmpty, IsPhoneNumber, IsEnum, IsEmail } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -31,20 +32,39 @@ export class RequestOtpDto {
         description: 'Numero de telephone au format international avec indicatif pays (+237 pour Cameroun)',
         pattern: '^\\+[1-9]\\d{1,14}$'
     })
+=======
+import { IsString, IsNotEmpty, IsPhoneNumber, IsEnum } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+
+// Enum pour savoir dans quelle table chercher
+export enum UserRole {
+    CLIENT = 'CLIENT',
+    DRIVER = 'DRIVER',
+    ADMIN = 'ADMIN'
+}
+
+export class RequestOtpDto {
+    @ApiProperty({ example: '+237699000000' })
+>>>>>>> cc8fef2615d4ba134558d599d94cde0f8d040787
     @IsString()
     @IsNotEmpty()
     phoneNumber: string;
 
+<<<<<<< HEAD
     @ApiProperty({
         enum: UserRole,
         enumName: 'UserRole',
         description: 'Type d\'utilisateur: CLIENT (passager) ou DRIVER (chauffeur). ADMIN non supporte.',
         example: 'CLIENT'
     })
+=======
+    @ApiProperty({ enum: UserRole })
+>>>>>>> cc8fef2615d4ba134558d599d94cde0f8d040787
     @IsEnum(UserRole)
     role: UserRole;
 }
 
+<<<<<<< HEAD
 /**
  * DTO pour verifier le code OTP et obtenir un token JWT.
  *
@@ -62,20 +82,29 @@ export class VerifyOtpDto {
         description: 'Meme numero de telephone utilise pour demander l\'OTP',
         pattern: '^\\+[1-9]\\d{1,14}$'
     })
+=======
+export class VerifyOtpDto {
+    @ApiProperty({ example: '+237699000000' })
+>>>>>>> cc8fef2615d4ba134558d599d94cde0f8d040787
     @IsString()
     @IsNotEmpty()
     phoneNumber: string;
 
+<<<<<<< HEAD
     @ApiProperty({
         example: '1234',
         description: 'Code OTP a 4 chiffres recu par SMS. Valide pendant 5 minutes.',
         minLength: 4,
         maxLength: 4
     })
+=======
+    @ApiProperty({ example: '1234' })
+>>>>>>> cc8fef2615d4ba134558d599d94cde0f8d040787
     @IsString()
     @IsNotEmpty()
     otpCode: string;
 
+<<<<<<< HEAD
     @ApiProperty({
         enum: UserRole,
         enumName: 'UserRole',
@@ -152,4 +181,9 @@ export class PhoneVerifyDto {
     @IsString()
     @IsNotEmpty()
     otpCode: string;
+=======
+    @ApiProperty({ enum: UserRole })
+    @IsEnum(UserRole)
+    role: UserRole;
+>>>>>>> cc8fef2615d4ba134558d599d94cde0f8d040787
 }

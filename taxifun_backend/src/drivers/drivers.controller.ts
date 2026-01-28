@@ -2,14 +2,21 @@ import { Controller, Post, Get, Patch, Body, Param, UseGuards, ParseUUIDPipe, Re
 import { DriversService } from './drivers.service';
 import { CreateDriverDto } from './dto/create-driver.dto';
 import { UpdateDriverDto } from './dto/update-driver.dto';
+<<<<<<< HEAD
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 
 @ApiTags('Drivers - Chauffeurs')
+=======
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; // À créer
+import { ApiBearerAuth } from '@nestjs/swagger';
+
+>>>>>>> cc8fef2615d4ba134558d599d94cde0f8d040787
 @Controller('drivers')
 export class DriversController {
   constructor(private readonly driversService: DriversService) { }
 
+<<<<<<< HEAD
   /**
    * Inscription d'un nouveau chauffeur.
    *
@@ -81,10 +88,15 @@ export class DriversController {
       }
     }
   })
+=======
+  // Inscription publique
+  @Post('register')
+>>>>>>> cc8fef2615d4ba134558d599d94cde0f8d040787
   register(@Body() createDriverDto: CreateDriverDto) {
     return this.driversService.create(createDriverDto);
   }
 
+<<<<<<< HEAD
   /**
    * Recuperer le profil du chauffeur connecte.
    * Necessite un token JWT valide dans le header Authorization.
@@ -195,6 +207,21 @@ export class DriversController {
     status: 401,
     description: 'Token JWT manquant ou invalide',
   })
+=======
+  // Récupérer son propre profil (Nécessite d'être connecté)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('me')
+  getProfile(@Request() req) {
+    // req.user est injecté par la JwtStrategy
+    return this.driversService.findOne(req.user.id);
+  }
+
+  // Mettre à jour son statut (En ligne/Hors ligne)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Patch('me/status')
+>>>>>>> cc8fef2615d4ba134558d599d94cde0f8d040787
   updateStatus(@Request() req, @Body() updateDriverDto: UpdateDriverDto) {
     return this.driversService.update(req.user.id, updateDriverDto);
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:taxifun_core/taxifun_core.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -53,7 +54,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                _buildPhoneField(),
+                TaxiFunPhoneInput(onInputChanged: (PhoneNumber p1) {}),
                 const SizedBox(height: 20),
 
                 _buildGenderDropdown(),
@@ -67,9 +68,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   title: "S'Inscrire",
                   isLoading: false,
                   onPressed: _agreeToTerms
-                      ? () {
-                          // Action backend
-                        }
+                      ? onSubmit()
                       : null, // Désactivé si non coché
                 ),
 
@@ -119,40 +118,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,
           vertical: 18,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPhoneField() {
-    return TextField(
-      keyboardType: TextInputType.phone,
-      decoration: InputDecoration(
-        hintText: 'Your mobile number',
-        prefixIcon: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(width: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: Image.network(
-                'https://flagcdn.com/w40/cm.png',
-                width: 30,
-                height: 20,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.flag),
-              ),
-            ),
-            const Icon(Icons.arrow_drop_down, color: Colors.black),
-            const Text('+237', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(width: 12),
-          ],
-        ),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: orangeColor, width: 2),
         ),
       ),
     );
@@ -218,4 +183,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ],
     );
   }
+
+  onSubmit() {}
 }

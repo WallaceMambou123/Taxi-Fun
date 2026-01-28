@@ -18,7 +18,6 @@ class _LoginScreenState extends State<LoginScreen> {
   // On initialise avec le code ISO par défaut (Cameroun)
   PhoneNumber _phoneNumber = PhoneNumber(isoCode: 'CM');
   bool _isPhoneValid = false;
-
   bool _isLoading = false;
 
   // Utilisation de l'ApiClient centralisé
@@ -116,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           label: "Vous n'avez pas de compte ?",
                           actionText: "Inscrivez-vous",
                           onPressed: () =>
-                              Navigator.pushNamed(context, '/HomeScreen'),
+                              Navigator.pushNamed(context, '/RegisterScreen'),
                         ),
 
                         // Un petit espace final pour ne pas coller au bord de l'écran

@@ -47,7 +47,6 @@ export class AuthService {
         return { message: 'OTP envoyé avec succès' };
     }
 
-
     async verifyOtp(dto: VerifyOtpDto) {
         const { phoneNumber, otpCode, role } = dto;
         const redisKey = `otp:${role}:${phoneNumber}`;

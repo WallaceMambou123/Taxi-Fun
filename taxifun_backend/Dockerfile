@@ -60,4 +60,4 @@ RUN npm run build
 EXPOSE 3000
 
 # Commande de démarrage : npm run start:dev | npm run start:prod
-CMD ["npm", "run", "start:dev"]
+CMD ["npm", "run", "start:prod"]

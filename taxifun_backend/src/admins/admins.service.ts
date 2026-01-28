@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Injectable, ConflictException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
@@ -139,5 +140,31 @@ export class AdminsService {
     });
 
     return { message: 'Administrateur supprimé avec succès' };
+=======
+import { Injectable } from '@nestjs/common';
+import { CreateAdminDto } from './dto/create-admin.dto';
+import { UpdateAdminDto } from './dto/update-admin.dto';
+
+@Injectable()
+export class AdminsService {
+  create(createAdminDto: CreateAdminDto) {
+    return 'This action adds a new admin';
+  }
+
+  findAll() {
+    return `This action returns all admins`;
+  }
+
+  findOne(id: number) {
+    return `This action returns a #${id} admin`;
+  }
+
+  update(id: number, updateAdminDto: UpdateAdminDto) {
+    return `This action updates a #${id} admin`;
+  }
+
+  remove(id: number) {
+    return `This action removes a #${id} admin`;
+>>>>>>> cc8fef2615d4ba134558d599d94cde0f8d040787
   }
 }

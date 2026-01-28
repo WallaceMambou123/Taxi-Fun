@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import { AdminsService } from './admins.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
@@ -5,10 +6,18 @@ import { UpdateAdminDto } from './dto/update-admin.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('Admins - Administrateurs')
+=======
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { AdminsService } from './admins.service';
+import { CreateAdminDto } from './dto/create-admin.dto';
+import { UpdateAdminDto } from './dto/update-admin.dto';
+
+>>>>>>> cc8fef2615d4ba134558d599d94cde0f8d040787
 @Controller('admins')
 export class AdminsController {
   constructor(private readonly adminsService: AdminsService) {}
 
+<<<<<<< HEAD
   /**
    * Creer un nouvel administrateur.
    *
@@ -79,10 +88,14 @@ export class AdminsController {
       }
     }
   })
+=======
+  @Post()
+>>>>>>> cc8fef2615d4ba134558d599d94cde0f8d040787
   create(@Body() createAdminDto: CreateAdminDto) {
     return this.adminsService.create(createAdminDto);
   }
 
+<<<<<<< HEAD
   /**
    * Recuperer la liste de tous les administrateurs.
    */
@@ -109,10 +122,14 @@ export class AdminsController {
       }
     }
   })
+=======
+  @Get()
+>>>>>>> cc8fef2615d4ba134558d599d94cde0f8d040787
   findAll() {
     return this.adminsService.findAll();
   }
 
+<<<<<<< HEAD
   /**
    * Recuperer un administrateur par son ID.
    */
@@ -227,5 +244,20 @@ export class AdminsController {
   })
   remove(@Param('id') id: string) {
     return this.adminsService.remove(id);
+=======
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.adminsService.findOne(+id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateAdminDto: UpdateAdminDto) {
+    return this.adminsService.update(+id, updateAdminDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.adminsService.remove(+id);
+>>>>>>> cc8fef2615d4ba134558d599d94cde0f8d040787
   }
 }

@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _destinationController = TextEditingController();
 
   // Remplace par TA clé Google Places API (doit avoir Places API + Maps SDK activés)
-  static const String googleApiKey = "TA_CLÉ_GOOGLE_PLACES_ICI";
+  //static const String googleApiKey = "TA_CLÉ_GOOGLE_PLACES_ICI";
 
   @override
   void initState() {
