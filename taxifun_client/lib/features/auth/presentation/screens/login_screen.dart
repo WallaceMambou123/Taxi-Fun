@@ -19,6 +19,15 @@ class _LoginScreenState extends State<LoginScreen> {
   // On instancie le repository au lieu de l'ApiClient directement
   final AuthRepository _authRepo = AuthRepository();
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is String) {
+      _phoneNumber = PhoneNumber(isoCode: 'CM', phoneNumber: args);
+    }
+  }
+
   Future<void> _handleOtpRequest() async {
     if (!_isPhoneValid) {
       _showSnackBar("Veuillez entrer un numéro valide", isError: true);

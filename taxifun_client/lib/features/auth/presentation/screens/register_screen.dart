@@ -41,7 +41,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (mounted) {
         _showSnackBar("Compte créé ! Veuillez valider votre numéro.");
         // Après inscription, on envoie vers le login pour déclencher l'OTP
-        Navigator.pushReplacementNamed(context, '/LoginScreen');
+        Navigator.pushReplacementNamed(
+          context,
+          '/LoginScreen',
+          arguments: _phoneNumber.phoneNumber, //auto completion
+        );
       }
     } catch (e) {
       if (mounted) _showSnackBar(e.toString(), isError: true);
@@ -172,11 +176,33 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Row(
       children: [
         Checkbox(
-          value: _agreeToTerms,
-          activeColor: AppTheme.primaryOrange,
-          onChanged: (value) => setState(() => _agreeToTerms = value ?? false),
+          value: _agreeToTerms, // Variable booléenne de ta classe
+          activeColor: Colors.green,
+          onChanged: (value) {
+            setState(() {
+              _agreeToTerms = value ?? false;
+            });
+          },
         ),
-        const Expanded(child: Text('J\'accepte les conditions d\'utilisation')),
+        Expanded(
+          child: RichText(
+            text: TextSpan(
+              text: 'By signing up, you agree to the ',
+              style: const TextStyle(color: Colors.black87, fontSize: 14),
+              children: [
+                TextSpan(
+                  text: 'Terms of service',
+                  style: TextStyle(color: AppTheme.primaryOrange),
+                ),
+                const TextSpan(text: ' and '),
+                TextSpan(
+                  text: 'Privacy policy.',
+                  style: TextStyle(color: AppTheme.primaryOrange),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }

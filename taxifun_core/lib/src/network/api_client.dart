@@ -8,7 +8,7 @@ class ApiClient {
     if (kReleaseMode) {
       return "http://taxifun-api-production-a9a2.up.railway.app"; // URL de production
     } else {
-      return "http://192.168.1.126:3000"; // URL de développement locale
+      return "http://192.168.39.220:3000"; // URL de développement locale
     }
   }
 

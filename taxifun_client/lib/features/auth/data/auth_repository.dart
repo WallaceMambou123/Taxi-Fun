@@ -13,7 +13,7 @@ class AuthRepository {
     try {
       return await _apiClient.dio.post(
         '/auth/otp/request',
-        data: {'phoneNumber': phoneNumber},
+        data: {'phoneNumber': phoneNumber, "role": "CLIENT"},
       );
     } on DioException catch (e) {
       // On propage l'erreur pour que l'UI puisse l'afficher
@@ -26,7 +26,7 @@ class AuthRepository {
     try {
       final response = await _apiClient.dio.post(
         '/auth/otp/verify',
-        data: {'phoneNumber': phoneNumber, 'code': code},
+        data: {'phoneNumber': phoneNumber, 'otpCode': code, "role": "CLIENT"},
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -52,14 +52,8 @@ class AuthRepository {
   }) async {
     try {
       await _apiClient.dio.post(
-        '/auth/register',
-        data: {
-          "fullName": name,
-          "email": email,
-          "phoneNumber": phone,
-          "gender": gender,
-          "role": "CLIENT",
-        },
+        '/clients/register',
+        data: {"firstName": name, "email": email, "phoneNumber": phone},
       );
     } on DioException catch (e) {
       throw e.response?.data['message'] ?? "Erreur lors de l'inscription";

@@ -5,45 +5,51 @@ import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class SmsService {
-    // On injecte les deux services dans le constructeur
     constructor(
         private readonly httpService: HttpService,
-        private readonly configService: ConfigService // <--- C'ETAIT L'OUBLI CRITIQUE !
+        private readonly configService: ConfigService
     ) { }
 
-    async sendSms(phoneNumber: string, message: string): Promise<any> {
+    async sendSms(phoneNumber: string, message: string): Promise<{ success: boolean; data?: any }> {
         try {
             const apiUrl = "https://devcodesms.com/developpeur/Send_sms_dev";
-
-            // 1. Log tes clés pour être SUR qu'elles sont bien chargées
             const apiKey = this.configService.get('DEVCODE_API_KEY');
             const senderId = this.configService.get('DEVCODE_SENDER_ID');
 
-            console.log('Envoi SMS vers:', phoneNumber, 'avec SenderID:', senderId);
+            // 1. Nettoyage du numéro : on enlève le '+' s'il existe
+            const cleanPhone = phoneNumber.startsWith('+')
+                ? phoneNumber.substring(1)
+                : phoneNumber;
 
             const payload = {
                 api_key: apiKey,
-                phone: phoneNumber,
+                phone: cleanPhone, // On utilise le numéro propre
                 message: message,
                 sender: senderId,
             };
 
-            // 2. Utilise des headers propres pour éviter l'undefined
             const response = await firstValueFrom(
                 this.httpService.post(apiUrl, payload, {
                     headers: { 'Content-Type': 'application/json' }
                 })
             );
 
-            return response.data;
+            // 2. On retourne toujours un objet, jamais null
+            // Note: Vérifie si DevCode renvoie 'success' ou 'status'
+            return {
+                success: response.data?.status === 'success' || response.data?.code === 200,
+                data: response.data
+            };
+
         } catch (error) {
-            // Log plus précis pour voir si c'est l'URL ou les paramètres
             console.error('Erreur SMS DevCode:', {
                 status: error.response?.status,
                 data: error.response?.data,
                 message: error.message
             });
-            return null;
+
+            // 3. Retourne un objet success: false au lieu de null !
+            return { success: false };
         }
     }
 }

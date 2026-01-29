@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
+import { Injectable, UnauthorizedException, NotFoundException, BadRequestException, Inject, InternalServerErrorException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { RequestOtpDto, VerifyOtpDto, UserRole } from './dto/auth.dto';
 import { ClientsService } from '../clients/clients.service';
@@ -23,28 +23,31 @@ export class AuthService {
 
     async requestOtp(dto: RequestOtpDto) {
         const { phoneNumber, role } = dto;
-        let otp = '1234';
+        const isDev = this.isDevPhoneNumber(phoneNumber)
 
         // 1. Vérifier si l'utilisateur existe
         const user = await this.getUser(phoneNumber, role);
         if (!user) throw new NotFoundException('Utilisateur non trouvé');
 
-        // la porte derobe pour les tests
-        if (!this.isDevPhoneNumber(phoneNumber)) {
-            // 2. Générer un OTP sécurisé
-            otp = Math.floor(1000 + Math.random() * 9000).toString();
-        }
+        // 2. Générer un OTP sécurisé
+        const otp = isDev ? "1234" : Math.floor(1000 + Math.random() * 9000).toString();
 
         // 3. Stocker dans Redis avec une expiration (ex: 300 secondes = 5 minutes)
         const redisKey = `otp:${role}:${phoneNumber}`;
         await this.redis.set(redisKey, otp, 'EX', 300);
 
-        // 4. Envoyer le SMS
-        const reponse = await this.smsService.sendSms(phoneNumber, `<#> Votre code TaxiFun est : ${otp}. Ne le partagez pas.`);
-        if (!reponse.success) throw new NotFoundException('Une Erreur est survenue');
-        console.log(reponse);
+        if (isDev) return { message: 'OTP Dev envoyé avec succès' };
 
-        return { message: 'OTP envoyé avec succès' };
+        /* 4. Envoyer le SMS
+        const reponse = await this.smsService.sendSms(phoneNumber, `<#> Votre code TaxiFun est : ${otp}. Ne le partagez pas.`);
+        if (reponse && reponse.success) {
+            console.error("Échec de l'envoi SMS ou réponse vide:", reponse);
+            return { message: 'OTP envoyé avec succès' };
+        }
+        console.log(reponse);
+        */
+
+        throw new InternalServerErrorException("Impossible d'envoyer le SMS de vérification");
     }
 
     async verifyOtp(dto: VerifyOtpDto) {
